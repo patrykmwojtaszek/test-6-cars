@@ -43,10 +43,11 @@ public class CarController {
     }
 
     @PutMapping(value = "/delete-car-from-garage/{carId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<String> deleteCarFromGarage(@PathVariable(name = "carId") long carId) {
+    public ResponseEntity<CarDto> deleteCarFromGarage(@PathVariable(name = "carId") long carId) {
         Car car = carService.getCarById(carId);
-        carService.deleteCarFromGarage(car);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("The car with id: " + carId + " was deleted from the garage");
+        car = carService.deleteCarFromGarage(car);
+        CarDto carDto = carMapper.mapFromCarToCarDto(car);
+        return ResponseEntity.status(HttpStatus.OK).body(carDto);
     }
 
 }
