@@ -32,7 +32,7 @@ public class CarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(carDto);
     }
 
-    @PutMapping(value = "/addcar/{carId}/{garageId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @PutMapping(value = "/add-car-to-garage/{carId}/{garageId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<CarDto> addCarToGarage(@PathVariable long carId,
                                                  @PathVariable long garageId) {
         Car car = carService.getCarById(carId);
@@ -42,7 +42,7 @@ public class CarController {
         return ResponseEntity.status(HttpStatus.OK).body(carDto);
     }
 
-    @DeleteMapping(value = "/deletecar/{carId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @PutMapping(value = "/delete-car-from-garage/{carId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<String> deleteCarFromGarage(@PathVariable(name = "carId") long carId) {
         Car car = carService.getCarById(carId);
         carService.deleteCarFromGarage(car);
