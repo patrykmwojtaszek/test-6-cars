@@ -22,7 +22,7 @@ public class Garage {
 
     private int capacity;
 
-    private boolean isLpgAllowed;
+    private boolean lpgAllowed;
 
     @OneToMany(mappedBy = "garage", fetch = FetchType.LAZY)
     private List<Car> cars = new ArrayList<>();

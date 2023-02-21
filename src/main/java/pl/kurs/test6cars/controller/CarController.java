@@ -16,7 +16,7 @@ import pl.kurs.test6cars.service.GarageService;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/api/cars")
+@RequestMapping("/api/v1/")
 @RequiredArgsConstructor
 public class CarController {
 
@@ -32,20 +32,20 @@ public class CarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(carDto);
     }
 
-    @PutMapping(value = "/add-car-to-garage/{carId}/{garageId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @PatchMapping (value = "/garage/{garageId}/car/{carId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<CarDto> addCarToGarage(@PathVariable long carId,
                                                  @PathVariable long garageId) {
-        Car car = carService.getCarById(carId);
-        Garage garage = garageService.getGarageById(garageId);
-        car = carService.addCarToGarage(car, garage);
+//        Car car = carService.getCarById(carId);
+//        Garage garage = garageService.getGarageById(garageId);
+        Car car = carService.addCarToGarage(carId, garageId);
         CarDto carDto = carMapper.mapFromCarToCarDto(car);
         return ResponseEntity.status(HttpStatus.OK).body(carDto);
     }
 
-    @PutMapping(value = "/delete-car-from-garage/{carId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @PatchMapping(value = "/delete-car-from-garage/{carId}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<CarDto> deleteCarFromGarage(@PathVariable(name = "carId") long carId) {
-        Car car = carService.getCarById(carId);
-        car = carService.deleteCarFromGarage(car);
+//        Car car = carService.getCarById(carId);
+        Car car = carService.deleteCarFromGarage(carId);
         CarDto carDto = carMapper.mapFromCarToCarDto(car);
         return ResponseEntity.status(HttpStatus.OK).body(carDto);
     }

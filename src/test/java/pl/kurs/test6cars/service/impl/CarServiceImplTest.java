@@ -16,7 +16,7 @@ import pl.kurs.test6cars.model.Garage;
 import pl.kurs.test6cars.repository.CarRepository;
 import pl.kurs.test6cars.repository.GarageRepository;
 
-import java.util.ArrayList;
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,6 +75,7 @@ class CarServiceImplTest {
     public void addCarToGarage_shouldAdd() {
         //given
         Car car = Car.builder()
+                .id(1L)
                 .producer("BMW")
                 .model("5")
                 .power(190)
@@ -85,18 +86,18 @@ class CarServiceImplTest {
                 .id(1L)
                 .address("Warszawa")
                 .capacity(10)
-                .isLpgAllowed(false)
+                .lpgAllowed(false)
                 .cars(List.of())
                 .build();
 
-//        when(garage.getCars()).thenReturn(new ArrayList<>());
+        when(carRepository.findCarWithLockingById(any(Long.class))).thenReturn(Optional.of(car));
+        when(garageRepository.findGarageWithLockingById(any(Long.class))).thenReturn(Optional.of(garage));
 
         when(garageRepository.save(any(Garage.class))).thenReturn(garage);
         when(carRepository.save(any(Car.class))).thenReturn(car);
 
         //when
-//        car.setGarage(garage);
-        Car carResult = carService.addCarToGarage(car, garage);
+        Car carResult = carService.addCarToGarage(1L, 1L);
         car.setGarage(garage);
 
         //then
@@ -108,6 +109,37 @@ class CarServiceImplTest {
     }
 
     @Test
+    public void addCarToGarage_shouldThrowEntityNotFoundExceptionWhenCarIsNotFound() {
+        long carId = 5L;
+        String exceptionMessage = "Entity with id " + carId + " do not exists";
+
+        EntityNotFoundException e = Assertions.assertThrows(EntityNotFoundException.class, () -> carService.addCarToGarage(5L, 2L));
+        assertEquals(exceptionMessage, e.getMessage());
+
+        verifyNoInteractions(garageRepository);
+    }
+
+    @Test
+    public void addCarToGarage_shouldThrowEntityNotFoundExceptionWhenGarageIsNotFound() {
+        long garageId = 5L;
+        String exceptionMessage = "Entity with id " + garageId + " do not exists";
+
+        Car carForPark = Car.builder()
+                .id(3L)
+                .producer("BMW")
+                .model("5")
+                .power(190)
+                .fuelType(FuelType.ON)
+                .garage(null)
+                .build();
+
+        when(carRepository.findCarWithLockingById(any(Long.class))).thenReturn(Optional.of(carForPark));
+
+        EntityNotFoundException e = Assertions.assertThrows(EntityNotFoundException.class, () -> carService.addCarToGarage(3L, 5L));
+        assertEquals(exceptionMessage, e.getMessage());
+    }
+
+    @Test
     public void addCarToGarage_shouldThrowIllegalArgumentExceptionWhenCarIsParkedAlready() {
         String exceptionMessage = "This car is parked in another garage!";
 
@@ -115,7 +147,7 @@ class CarServiceImplTest {
                 .id(2L)
                 .address("Warszawa")
                 .capacity(20)
-                .isLpgAllowed(false)
+                .lpgAllowed(false)
                 .build();
 
         Car carForPark = Car.builder()
@@ -127,10 +159,11 @@ class CarServiceImplTest {
                 .garage(garage)
                 .build();
 
-        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.addCarToGarage(carForPark, garage));
-        assertEquals(exceptionMessage, e.getMessage());
+        when(carRepository.findCarWithLockingById(any(Long.class))).thenReturn(Optional.of(carForPark));
+        when(garageRepository.findGarageWithLockingById(any(Long.class))).thenReturn(Optional.of(garage));
 
-        verifyNoInteractions(carRepository);
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.addCarToGarage(5L, 2L));
+        assertEquals(exceptionMessage, e.getMessage());
     }
 
     @Test
@@ -138,6 +171,7 @@ class CarServiceImplTest {
         String exceptionMessage = "This garage does not have enough space for add this car";
 
         Car car = Car.builder()
+                .id(3L)
                 .producer("BMW")
                 .model("5")
                 .power(190)
@@ -148,13 +182,14 @@ class CarServiceImplTest {
                 .id(1L)
                 .address("Warszawa")
                 .capacity(0)
-                .isLpgAllowed(false)
+                .lpgAllowed(false)
                 .build();
 
-        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.addCarToGarage(car, garage));
-        assertEquals(exceptionMessage, e.getMessage());
+        when(carRepository.findCarWithLockingById(any(Long.class))).thenReturn(Optional.of(car));
+        when(garageRepository.findGarageWithLockingById(any(Long.class))).thenReturn(Optional.of(garage));
 
-        verifyNoInteractions(carRepository);
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.addCarToGarage(3L, 1L));
+        assertEquals(exceptionMessage, e.getMessage());
     }
 
     @Test
@@ -162,6 +197,7 @@ class CarServiceImplTest {
         String exceptionMessage = "This garage is not accept cars LPG";
 
         Car car = Car.builder()
+                .id(2L)
                 .producer("BMW")
                 .model("5")
                 .power(190)
@@ -172,61 +208,63 @@ class CarServiceImplTest {
                 .id(1L)
                 .address("Warszawa")
                 .capacity(10)
-                .isLpgAllowed(false)
+                .lpgAllowed(false)
                 .build();
 
-        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.addCarToGarage(car, garage));
+        when(carRepository.findCarWithLockingById(any(Long.class))).thenReturn(Optional.of(car));
+        when(garageRepository.findGarageWithLockingById(any(Long.class))).thenReturn(Optional.of(garage));
+
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.addCarToGarage(2L, 1L));
         assertEquals(exceptionMessage, e.getMessage());
-
-        verifyNoInteractions(carRepository);
     }
 
-    @Test
-    public void getCarById_shouldGetCarById() {
-        //given
-        Car car = Car.builder()
-                .id(1L)
-                .producer("BMW")
-                .model("5")
-                .power(190)
-                .fuelType(FuelType.ON)
-                .build();
-        when(carRepository.findById(any(Long.class))).thenReturn(java.util.Optional.of(car));
-
-        //when
-        Car carResult = carService.getCarById(1L);
-
-        //then
-        assertEquals(car, carResult);
-    }
-
-    @Test
-    public void getCarById_shouldThrowWrongIdExceptionWhenEntityIsNull() {
-        String exceptionMessage = "Id should be not null";
-
-        WrongIdException e = Assertions.assertThrows(WrongIdException.class, () -> carService.getCarById(null));
-        assertEquals(exceptionMessage, e.getMessage());
-
-        verifyNoInteractions(carRepository);
-    }
-
-    @Test
-    public void getCarById_shouldThrowNoEntityExceptionWhenEntityIsNull() {
-        Long id = 1L;
-        String exceptionMessage = "Entity with id " + id + " do not exists";
-
-        when(carRepository.findById(any(Long.class))).thenReturn(Optional.empty());
-
-        NoEntityException e = Assertions.assertThrows(NoEntityException.class, () -> carService.getCarById(id));
-        assertEquals(exceptionMessage, e.getMessage());
-
-        verify(carRepository).findById(id);
-    }
+//    @Test
+//    public void getCarById_shouldGetCarById() {
+//        //given
+//        Car car = Car.builder()
+//                .id(1L)
+//                .producer("BMW")
+//                .model("5")
+//                .power(190)
+//                .fuelType(FuelType.ON)
+//                .build();
+//        when(carRepository.findById(any(Long.class))).thenReturn(java.util.Optional.of(car));
+//
+//        //when
+//        Car carResult = carService.getCarById(1L);
+//
+//        //then
+//        assertEquals(car, carResult);
+//    }
+//
+//    @Test
+//    public void getCarById_shouldThrowWrongIdExceptionWhenEntityIsNull() {
+//        String exceptionMessage = "Id should be not null";
+//
+//        WrongIdException e = Assertions.assertThrows(WrongIdException.class, () -> carService.getCarById(null));
+//        assertEquals(exceptionMessage, e.getMessage());
+//
+//        verifyNoInteractions(carRepository);
+//    }
+//
+//    @Test
+//    public void getCarById_shouldThrowNoEntityExceptionWhenEntityIsNull() {
+//        Long id = 1L;
+//        String exceptionMessage = "Entity with id " + id + " do not exists";
+//
+//        when(carRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+//
+//        NoEntityException e = Assertions.assertThrows(NoEntityException.class, () -> carService.getCarById(id));
+//        assertEquals(exceptionMessage, e.getMessage());
+//
+//        verify(carRepository).findById(id);
+//    }
 
     @Test
     public void deleteCarFromGarage_shouldDelete() {
         //given
         Car car = Car.builder()
+                .id(4L)
                 .producer("AUDI")
                 .model("A6")
                 .power(245)
@@ -237,16 +275,18 @@ class CarServiceImplTest {
                 .id(1L)
                 .address("Krakow")
                 .capacity(10)
-                .isLpgAllowed(false)
+                .lpgAllowed(false)
                 .cars(List.of(car))
                 .build();
+
+        when(carRepository.findCarWithLockingById(any(Long.class))).thenReturn(Optional.of(car));
 
         when(garageRepository.save(any(Garage.class))).thenReturn(garage);
         when(carRepository.save(any(Car.class))).thenReturn(car);
 
         //when
         car.setGarage(garage);
-        Car carResult = carService.deleteCarFromGarage(car);
+        Car carResult = carService.deleteCarFromGarage(4L);
 
         //then
         assertEquals(car, carResult);
@@ -254,6 +294,16 @@ class CarServiceImplTest {
         verify(carRepository).save(carArgumentCaptor.capture());
         Car saved = carArgumentCaptor.getValue();
         assertEquals(car, saved);
+    }
+
+    @Test
+    public void deleteCarFromGarage_shouldThrowEntityNotFoundExceptionWhenCarIsNotFound() {
+        long carId = 5L;
+        String exceptionMessage = "Entity with id " + carId + " do not exists";
+
+        EntityNotFoundException e = Assertions.assertThrows(EntityNotFoundException.class, () -> carService.deleteCarFromGarage(carId));
+        assertEquals(exceptionMessage, e.getMessage());
+
     }
 
     @Test
@@ -269,10 +319,10 @@ class CarServiceImplTest {
                 .garage(null)
                 .build();
 
-        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.deleteCarFromGarage(carForPark));
-        assertEquals(exceptionMessage, e.getMessage());
+        when(carRepository.findCarWithLockingById(any(Long.class))).thenReturn(Optional.of(carForPark));
 
-        verifyNoInteractions(carRepository);
+        IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> carService.deleteCarFromGarage(5L));
+        assertEquals(exceptionMessage, e.getMessage());
     }
 
 }

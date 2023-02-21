@@ -10,6 +10,6 @@ public class GarageDto {
     private Long id;
     private String address;
     private int capacity;
-    private boolean isLpgAllowed;
+    private boolean LpgAllowed;
 
 }

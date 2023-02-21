@@ -22,6 +22,6 @@ public class CreateGarageCommand {
     private int capacity;
 
     @NotNull
-    private boolean isLpgAllowed;
+    private boolean lpgAllowed;
 
 }

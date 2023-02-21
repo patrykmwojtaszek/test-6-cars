@@ -11,12 +11,11 @@ import pl.kurs.test6cars.model.Garage;
 import pl.kurs.test6cars.repository.CarRepository;
 import pl.kurs.test6cars.repository.GarageRepository;
 import pl.kurs.test6cars.service.CarService;
-import java.util.Arrays;
+
 import java.util.ArrayList;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,7 +37,14 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public Car addCarToGarage(Car car, Garage garage) {
+    @Transactional
+    public Car addCarToGarage(Long carId, Long garageId) {
+
+        Car car = carRepository.findCarWithLockingById(carId)
+                .orElseThrow(() -> new EntityNotFoundException("Entity with id " + carId + " do not exists"));
+
+        Garage garage = garageRepository.findGarageWithLockingById(garageId)
+                .orElseThrow(() -> new EntityNotFoundException("Entity with id " + garageId + " do not exists"));
 
         if (!Objects.isNull(car.getGarage())) {
             throw new IllegalArgumentException("This car is parked in another garage!");
@@ -49,8 +55,6 @@ public class CarServiceImpl implements CarService {
         }
 
         if (car.getFuelType() == FuelType.LPG && !garage.isLpgAllowed()) {
-//            throw new IllegalArgumentException(MessageFormat
-//                    .format("The garage with id {} is not accept cars LPG", garage.getId()));
             throw new IllegalArgumentException("This garage is not accept cars LPG");
         }
 
@@ -64,17 +68,22 @@ public class CarServiceImpl implements CarService {
         return carRepository.save(car);
     }
 
-    @Override
-    public Car getCarById(Long id) {
-        if (Objects.isNull(id)) {
-            throw new WrongIdException("Id should be not null");
-        }
-        return carRepository.findById(id)
-                .orElseThrow(() -> new NoEntityException("Entity with id " + id + " do not exists"));
-    }
+//    @Override
+//    public Car getCarById(Long id) {
+//        if (Objects.isNull(id)) {
+//            throw new WrongIdException("Id should be not null");
+//        }
+//        return carRepository.findById(id)
+//                .orElseThrow(() -> new NoEntityException("Entity with id " + id + " do not exists"));
+//    }
 
     @Override
-    public Car deleteCarFromGarage(Car car) {
+    @Transactional
+    public Car deleteCarFromGarage(Long carId) {
+
+        Car car = carRepository.findCarWithLockingById(carId)
+                .orElseThrow(() -> new EntityNotFoundException("Entity with id " + carId + " do not exists"));
+
         if (Objects.isNull(car.getGarage())) {
             throw new IllegalArgumentException("This car is not added to any garage");
         }

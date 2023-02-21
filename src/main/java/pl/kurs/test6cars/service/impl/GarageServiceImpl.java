@@ -28,12 +28,12 @@ public class GarageServiceImpl implements GarageService {
         return garageRepository.save(garage);
     }
 
-    @Override
-    public Garage getGarageById(Long id) {
-        if (Objects.isNull(id)) {
-            throw new WrongIdException("Id should be not null");
-        }
-        return garageRepository.findById(id)
-                .orElseThrow(() -> new NoEntityException("Entity with id " + id + " do not exists"));
-    }
+//    @Override
+//    public Garage getGarageById(Long id) {
+//        if (Objects.isNull(id)) {
+//            throw new WrongIdException("Id should be not null");
+//        }
+//        return garageRepository.findById(id)
+//                .orElseThrow(() -> new NoEntityException("Entity with id " + id + " do not exists"));
+//    }
 }

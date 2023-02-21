@@ -22,22 +22,18 @@ import pl.kurs.test6cars.service.GarageService;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/api/garages")
+@RequestMapping("/api/v1/garages")
 @RequiredArgsConstructor
 public class GarageController {
 
     private final GarageService garageService;
     private final GarageMapper garageMapper;
-//    private final ModelMapper modelMapper;
 
     @PostMapping
     public ResponseEntity<GarageDto> addGarage(@RequestBody @Valid CreateGarageCommand createGarageCommand) {
         Garage garage = garageMapper.mapFromCreateGarageCommandToGarage(createGarageCommand);
-//        Garage garage = modelMapper.map(createGarageCommand, Garage.class);
-//        garage.setLpgAllowed(createGarageCommand.isLpgAllowed());
         garage = garageService.add(garage);
         GarageDto garageDto = garageMapper.mapFromGarageToGarageDto(garage);
-//        GarageDto garageDto = modelMapper.map(garage, GarageDto.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(garageDto);
     }
 

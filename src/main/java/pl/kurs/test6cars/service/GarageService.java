@@ -6,6 +6,6 @@ import pl.kurs.test6cars.model.Garage;
 public interface GarageService {
 
     Garage add(Garage garage);
-    Garage getGarageById(Long id);
+//    Garage getGarageById(Long id);
 
 }
