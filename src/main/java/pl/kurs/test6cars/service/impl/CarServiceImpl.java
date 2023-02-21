@@ -3,6 +3,7 @@ package pl.kurs.test6cars.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.kurs.test6cars.exceptions.model.NoEntityException;
 import pl.kurs.test6cars.exceptions.model.WrongIdException;
 import pl.kurs.test6cars.model.Car;
@@ -15,7 +16,6 @@ import pl.kurs.test6cars.service.CarService;
 import java.util.ArrayList;
 
 import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 
